@@ -1,0 +1,58 @@
+Step 1: Create a cluster with node taints
+gcloud container clusters create gke-deep-dive --num-nodes=1 --disk-type=pd-standard
+--disk-size=10 --node-taints function=research:PreferNoSchedule
+Step 2: List all the nodes and pods
+Kubectl get nodes
+kubectl describe node <node-name>
+Step 3: Create a node pool without node taints
+When we create a node pool, the node pool does not inherit taints from the cluster.
+gcloud container node-pools create gke-deep-dive-pool --num-nodes=1
+--disk-type=pd-standard --disk-size=10 --cluster gke-deep-dive
+kubectl describe node <node-name>
+Step 4: Update the node pool with a taint
+If we need taints on the node pool, we’ll use the --node-taints flag.
+gcloud beta container node-pools update gke-deep-dive-pool
+--node-taints="function=shared:NoSchedule" --cluster=gke-deep-dive
+kubectl describe node <node-name>
+Step 5: Create a node pool with node taints
+gcloud container node-pools create gke-deep-dive-pool-dedicated --num-nodes=1
+--disk-type=pd-standard --disk-size=10 --cluster gke-deep-dive --node-taints
+dedicated=development:NoExecute
+kubectl describe node gke-deep-dive-pool-dedicated
+Step 6: Configure Pods to tolerate a taint
+This Pod can be scheduled on a node that has the function=shared:NoSchedule
+taint:
+shared-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+name: shared-pod
+spec:
+containers:
+- name: shared-pod
+image: nginx
+tolerations:
+- key: "function"
+operator: "Equal"
+value: "shared"
+effect: "NoSchedule"
+kubectl apply -f shared-pod.yaml
+Step 7: Update default node pool node to NoSchedule
+gcloud beta container node-pools update default-pool
+--node-taints="function=research:NoSchedule" --cluster=gke-deep-dive
+Step 9: Configure Pods without taint toleration
+dedicated-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+name: dedicated-pod
+spec:
+containers:
+- name: dedicated-pod
+image: nginx
+Kubectl apply -f dedicated-pod.yaml
+Step 10: List all the pods
+What do you notice?
+Step 11: Remove a taint from a node
+kubectl taint nodes <node-name> functionStep 12: List all the pods
+What do you notice?

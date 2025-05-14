@@ -1,0 +1,128 @@
+Step 1: gcloud config set compute/zone us-west1-a
+Step 2: gcloud container clusters create gke-deep-dive --num-nodes=1
+--disk-type=pd-standard --disk-size=10
+Step 3: gcloud container clusters update gke-deep-dive
+--enable-network-policy
+Step 4: gcloud container clusters create gke-deep-dive-network
+--num-nodes=1 --disk-type=pd-standard --disk-size=10
+--enable-network-policy
+Step 5: Run a web server application “Hello World” with label app=web-hello-world
+and expose it internally in the cluster:
+kubectl run web-hello-world --labels app=web-hello-world
+--image=gcr.io/google-samples/hello-app:2.0 --port 8080 --expose
+Step 6: Check the service, it doesn’t have an external IP address
+Kubectl get svc
+Step 7:Create necessary files:
+1. Egress policy:
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+name: web-hello-world-egress
+spec:
+policyTypes:
+- Egress
+podSelector:
+matchLabels:
+app: frontend
+egress:
+- to:
+- podSelector:
+matchLabels:
+app: web-hello-world
+- ports:
+- port: 53
+protocol: TCP
+- port: 53
+protocol: UDP
+The following manifest selects Pods with label web-hello-world and specifies an
+Ingress policy to allow traffic only from Pods with the label app=frontend:
+2. Ingress policy:
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+name: web-hello-world-ingress
+spec:
+policyTypes:
+- Ingress
+podSelector:
+matchLabels:
+app: web-hello-world
+ingress:
+- from:
+- podSelector:
+matchLabels:
+app: frontend
+Step 8: Run two temporary Pods, one with the label app=frontend and other with
+the label app=backend:
+The image we are using here supports curl:
+kubectl run --labels app=frontend --image=redhat/ubi8 --restart=Never --rm --stdin=true --tty=true
+frontend-pod
+kubectl run --labels app=backend --image=redhat/ubi8 --restart=Never --rm --stdin=true --tty=true
+backend-pod
+Step 9: Make a request to the web-hello-world:8080 endpoint to
+verify that the incoming traffic is allowed from both the pods:
+Curl http://web-hello-world:8080
+Step 10: Restricting incoming traffic to Pods
+Configure a NetworkPolicy to allow traffic to the web-hello-world Pods from
+only the app=frontend Pods. Incoming traffic from other Pod with label
+app=backend is blocked.
+kubectl apply -f ingress.yaml
+Step 11: Validate the Ingress policy
+Make a request to the web-hello-world:8080 endpoint again to verify that the
+incoming traffic is allowed only from the pod with label app=frontend
+curl http://web-hello-world:8080
+Step 12: Make an external call from pod with label app=frontend
+curl http://web-hello-world:8080
+curl google.com
+Step 13: Restricting outgoing traffic from the Pods
+We can restrict outgoing traffic as you did for the incoming traffic.
+However, to be able to query internal hostnames such as web-hello-world or
+external hostnames such as www.google.com, we need to allow DNS (domain name
+system) resolution in our egress network policies. DNS traffic occurs on port 53 using
+TCP and UDP protocols.
+To enable egress network policies, we’ll deploy a NetworkPolicy controlling
+outbound traffic from Pods with the label app=frontend while allowing traffic only to
+Pods with the label app=web-hello-world.
+The egress.yaml file we created specifies a network policy controlling the egress
+traffic from Pods with label app=frontend with two allowed destinations:
+1. Pods in the same namespace with the label app=web-hello-world.
+2. Cluster Pods or external endpoints on port 53 (UDP and TCP).
+To apply this policy to the cluster, run the following command:
+kubectl apply -f egress.yaml
+Step 13: Validate the egress policy
+From the temporary Pod with the label app=frontend run:
+curl http://hello-web:8080
+curl google.com
+Validate that the Pod cannot establish connections to google.com now
+Step 14: Change egress.yaml file
+Now lets change our egress.yaml file as below:
+Egress policy:
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+name: web-hello-world-egress
+spec:
+policyTypes:
+- Egress
+podSelector:
+matchLabels:
+app: frontend
+egress:
+- to:
+- podSelector:
+matchLabels:
+app: web-hello-world
+kubectl apply -f egress.yaml
+Step 15: Validate the egress policy
+From the temporary Pod with the label app=frontend run:
+curl http://hello-web:8080
+curl google.com
+What did you notice?
+Validate that the Pod cannot establish connections to both google.com and curl
+http://hello-web:8080 now.
+Step 16: Connect to web-hello-world using service IP
+From the temporary Pod with the label app=frontend run:
+curl <service-ip>
+Step 17: Clean up
+Exit from the temporary pods and they should be deleted automatically
+gcloud container clusters delete test

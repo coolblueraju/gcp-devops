@@ -1,0 +1,23 @@
+Step 1: Verify the API
+Step 2: Login to cloudshell
+Step 3: Create a VPC
+gcloud compute networks create gke-deep-dive-vpc --subnet-mode=custom
+Step 4: Create a subnet
+gcloud compute networks subnets create gke-deep-dive-vpc-subnet --network=gke-deep-dive-vpc
+--range=10.10.0.0/24 --region=us-west1
+Step 5: Verify the created network and it’s subnet
+There are no Secondary IP ranges in the subnet yet
+Step 5: Create VPC native cluster
+Secondary IP ranges in this step need to be at least /21
+gcloud container clusters create gke-deep-dive --zone us-west1-a --num-nodes=1
+--disk-type=pd-standard --disk-size=10 --enable-ip-alias --network=gke-deep-dive-vpc
+--subnetwork=gke-deep-dive-vpc-subnet --cluster-ipv4-cidr=/21 --services-ipv4-cidr=/21
+Step 6: Verify the secondary IP ranges created
+Step 7: Verify the cluster is deployed okay
+Step 8: Check the VPC-native traffic routing under networking section -
+enabled
+Step 9: delete the cluster:
+gcloud container clusters delete gke-deep-dive --zone us-west1-a
+Step 10: No secondary ranges
+There are no secondary ranges anymore in the subnet
+Step 11: Delete VPC
