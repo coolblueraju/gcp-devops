@@ -1,0 +1,44 @@
+Step 1: Create a GKE cluster
+gcloud config set compute/zone us-west1-a
+gcloud container clusters create gke-deep-dive --num-nodes=1 --disk-type=pd-standard
+--disk-size=10
+Step 2: Run a web server application using nginx image
+Gke-deep-dive-app.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+name: nginx-deployment
+spec:
+selector:
+matchLabels:
+app: nginx
+replicas: 2
+template:
+metadata:
+labels:
+app: nginx
+spec:
+containers:
+- name: nginx
+image: nginx:1.14.2
+ports:
+- containerPort: 80
+kubectl apply -f gke-deep-dive-app.yaml
+Step 3: kubectl get pods
+Step 4: kubectl set image deployment nginx nginx=nginx:1.9.1
+Step 5: kubectl set image deployment nginx-deployment nginx=nginx:1.9.1
+Step 6: kubectl get pods
+Step 7: kubectl rollout status deployment nginx-deployment
+Step 8: kubectl get deployment nginx-deployment
+Step 9: kubectl set image deployment nginx-deployment nginx=nginx:1.7.9
+Step 10: kubectl get deployment nginx-deployment
+Step 11: kubectl rollout status deployment nginx-deployment
+Step 12: kubectl rollout undo deployments nginx-deployment
+Step 13: kubectl rollout status deployment nginx-deployment
+Step 14: kubectl describe deployment nginx-deployment
+Step 15: kubectl set image deployment nginx-deployment
+nginx=nginx:1.21
+Step 16: kubectl rollout undo deployments nginx-deployment
+Step 17: kubectl rollout status deployment nginx-deployment
+Step 18: kubectl describe deployment nginx-deployment
+Step 19: kubectl rollout undo deployments nginx-deployment --to-revision 1
