@@ -1,0 +1,108 @@
+1. You can create a zonal cluster by using the gcloud CLI or the Google Cloud
+console.
+2. We’ll use gcloud command using Google Cloud Shell
+3. We’ll create a cluster with a custom boot disk to comply with the lab policies. If
+you specify a disk size higher than what’s specified in labs quick start page, the
+cluster creation command will throw up an error.
+--disk-size=DISK_SIZE Size for node VM boot disks in GB. Defaults to 100GB.
+DISK_SIZE should be less than 12 GB
+--disk-type=DISK_TYPE Type of the node VM boot disk. For version 1.24.0+,
+defaults to pd-balanced. DISK_TYPE must be: pd-standard
+--num-nodes=NUM_NODES; default=3. NUM_NODES should be = 1
+
+4. We’ll run the command below to set the default compute zone to us-west1-a. If
+the default zone is not set, you’ll need to include –zone options in all the
+commands for your cluster.
+
+gcloud config set compute/zone us-west1-a
+
+5. Type the following command to create a cluster now
+
+gcloud container clusters create gke-deep-dive --num-nodes=1 --disk-type=pd-standard --disk-size=10
+
+Make sure of the name format: (?:[a-z](?:[-a-z0-9]{0,38}[a-z0-9])?)
+6. The above command creates a new GKE cluster:
+a. Name: gke-deep-dive
+b. Number of nodes: 1
+c. Boot disk type: HDD
+d. Size: 10GB
+7. Give it about 10-15 minutes to create the cluster
+8. Verify the cluster
+a. Using console
+b. Gcloud command: gcloud container clusters list
+9. Delete the CLuster: gcloud container clusters delete gke-deep-dive
+a. Enter y
+In this lab we created a single node zonal cluster by using the gcloud CLI. If we are to
+create a multi zonal cluster, we’ll use the --node-locations flag in the command.
+--node-locations COMPUTE_ZONE,COMPUTE_ZONE1
+The following command creates a multi-zonal cluster
+
+gcloud container clusters create gke-deep-dive --num-nodes=3 --disk-type=pd-standard --disk-size=10 --zone us-central1-a --node-locations us-west1-a,us-west1-b,us-west1-c
+
+
+=======================================================================
+
+1. gcloud config set compute/zone us-west1-a
+
+2. gcloud container clusters create gke-deep-dive --num-nodes=1 --disk-type=pd-standard --disk-size=10
+
+3. gcloud container clusters create gke-deep-dive --num-nodes=3 --disk-type=pd-standard --disk-size=10 --zone us-central1-a --node-locations us-west1-a,us-west1-b,us-west1-c
+
+4. gcloud container clusters get-credentials gke-deep-dive
+5. kubectl config view
+6. kubectl get nodes/pods/namespaces
+
+check cluster name with -> # kubetctl config view
+
+7. root@cs-60267584922-default:/home/kk_lab_user_149723# kubectl run my-sample-app --image=gcr.io/cloud-marketplace/google/nginx.latest --cluster gke_kkgcplabs01-027_us-west1-a_gke-deep-drive
+
+
+=============================================
+
+Step 1: Install Kubectl
+1. root@ubuntu-host ~ on ☁️ odl_user_1031426@cloudlabsgcporg8.com(us-west1) ✖
+sudo apt-get install kubectl
+
+You can install kubectl using the Google Cloud CLI or an external package
+manager such as apt or yum. We used apt-get to install kubectl
+
+gcloud components install kubectl
+sudo apt-get install kubectl
+
+2. Verify that kubectl is installed
+a. kubectl version
+
+Step 2: Verify installation of required plugins
+Before you begin, check whether the plugin is already installed:
+gke-gcloud-auth-plugin --version
+
+If the output displays version information, skip this section.
+1. gcloud components install gke-gcloud-auth-plugin
+2. gke-gcloud-auth-plugin --version
+
+Step 3: generate a kubeconfig context for a specific cluster and to use the
+plugin:
+1. gcloud container clusters get-credentials CLUSTER_NAME --region=COMPUTE_REGION
+● Replace the following:
+i. CLUSTER_NAME: the name of your cluster.
+ii. COMPUTE_REGION: the Compute Engine region for your cluster. For
+zonal clusters, use --zone=COMPUTE_ZONE.
+gcloud container clusters get-credentials gke-deep-dive --zone us-west1-a
+
+Step 4: Verify the configuration:
+2. kubectl get namespaces
+● The output is similar to the following:
+NAME STATUS AGE
+default Active 51d
+kube-node-lease Active 51d
+kube-public Active 51d
+kube-system Active 51d
+
+Step 5: View Kubeconfig
+kubectl config view
+
+Step 6: Install a test app:
+kubectl run my-app --image gcr.io/cloud-marketplace/google/nginx1:latest --cluster <Cluster-Name>
+
+Step 7: Verify the app by listing pods:
+Kubectl get pods
