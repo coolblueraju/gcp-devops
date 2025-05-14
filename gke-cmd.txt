@@ -1,0 +1,16 @@
+1. gcloud config set compute/zone us-west1-a
+
+2. gcloud container clusters create gke-deep-dive --num-nodes=1 --disk-type=pd-standard --disk-size=10
+
+3. gcloud container clusters create gke-deep-dive --num-nodes=3 --disk-type=pd-standard --disk-size=10 --zone us-central1-a --node-locations us-west1-a,us-west1-b,us-west1-c
+
+4. gcloud container clusters get-credentials gke-deep-dive
+5. kubectl config view
+6. kubectl get nodes/pods/namespaces
+
+check cluster name with -> # kubetctl config view
+
+7. root@cs-60267584922-default:/home/kk_lab_user_149723# kubectl run my-sample-app --image=gcr.io/cloud-marketplace/google/nginx.latest --cluster gke_kkgcplabs01-027_us-west1-a_gke-deep-drive
+
+8. root@cs-60267584922-default:/home/kk_lab_user_149723# kubectl run my-sample-app --image=gcr.io/cloud-marketplace/google/nginx.latest --cluster gke_kkgcplabs01-027_us-west1-a_gke-deep-drive --label=test=gke
+

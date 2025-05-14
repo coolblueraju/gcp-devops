@@ -1,0 +1,18 @@
+Step 1: Verify the GKE API - follow General instructions
+
+Step 2: Create a cluster with labels
+gcloud container clusters create gke-deep-dive --zone us-west1-a --num-nodes=1 --disk-type=pd-standard --disk-size=10 –labels=test=gke
+
+Step 3: Test the label:
+gcloud container clusters describe gke-deep-dive --zone us-west1-a
+
+Step 4: Add or update labels for existing clusters
+gcloud container clusters update gke-deep-dive --zone us-west1-a –update-labels=newlabel=gkenew
+
+The label update overwrites any existing labels on the cluster. If the cluster has existing
+labels that you want to keep, you must include those labels along with any new labels
+that you want to add.
+
+Step 5: Remove cluster labels
+gcloud container clusters update gke-deep-dive --zone us-west1-a --remove-labels=newlabel
+gcloud container clusters describe gke-deep-dive --zone us-west1-a

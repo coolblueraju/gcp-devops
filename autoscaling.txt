@@ -1,0 +1,18 @@
+Step 1: Creating a cluster without autoscaling
+To create a cluster with autoscaling enabled, use the --enable-autoscaling flag
+and specify --min-nodes and --max-nodes:
+gcloud container clusters create gke-deep-dive --region=us-west1-a --disk-type=pd-standard --disk-size=10
+--num-nodes=1
+
+Step 2: Adding a node pool with autoscaling
+To add a node pool with autoscaling to an existing cluster, use the following command:
+gcloud container node-pools create gke-node-pool --cluster=gke-deep-dive --enable-autoscaling
+--max-nodes=2 --region=us-west1-a --disk-type=pd-standard --disk-size=10
+
+Step 3: Verifying that autoscaling for the existing node pool is enabled
+gcloud container node-pools describe gke-node-pool –cluster=gke-deep-dive |grep autoscaling -A 1
+
+
+Step 4: Disabling autoscaling for an existing node pool
+gcloud container clusters update gke-deep-dive --no-enable-autoscaling --node-pool=gke-node-pool
+--region=us-west1-a

@@ -1,0 +1,23 @@
+Step 1: Create a GKE cluster
+gcloud container clusters create gke-deep-dive --region=us-west1-a --disk-type=pd-standard --disk-size=10
+--num-nodes=1
+
+Step 2: Check the available version
+To see the available versions for your cluster's control plane, run the following
+command:
+gcloud container get-server-config --zone=us-west1-
+
+Step 3: Manually upgrading the control plane
+gcloud container clusters upgrade gke-deep-dive --zone=us-west1-a --master --cluster-version
+1.27.3-gke.1700
+To upgrade to a specific version that is not the default, specify the
+--cluster-version flag as in the following command:
+After upgrading a Standard control plane, you can upgrade its nodes. By default,
+Standard nodes created using the Google Cloud console have auto-upgrade enabled, so
+this happens automatically. Autopilot always upgrades nodes automatically.
+Upgrade a node pool:
+gcloud container clusters upgrade CLUSTER_NAME --node-pool=NODE_POOL_NAME
+To specify a different version of GKE on nodes, use the optional --cluster-version
+flag:
+gcloud container clusters upgrade CLUSTER_NAME --node-pool=NODE_POOL_NAME --cluster-version
+VERSION
